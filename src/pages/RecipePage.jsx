@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { recipesAPI, favoritesAPI, profileAPI } from '../services/api';
 import logo from '../assets/main/Logo.png';
-import search from '../assets/header/search.jpg';
+import searchIcon from '../assets/header/search.jpg';
 import fav from '../assets/header/fav.png';
 import user from '../assets/header/user.png';
 import recipe1 from '../assets/strrecept/1.png';

@@ -109,7 +109,11 @@ function App() {
       }
     }
 
-    loadUserRole()
+    // Не загружаем профиль если уже на странице login/register
+    const currentPath = window.location.pathname.toLowerCase()
+    if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
+      loadUserRole()
+    }
   }, [])
 
   if (window.location.pathname.toLowerCase().includes('/recipe')) {

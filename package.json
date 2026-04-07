@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && rm -rf dist/{catalog,footer,header,main,profile,strrecept}",
     "lint": "eslint .",
     "preview": "vite preview"
   },

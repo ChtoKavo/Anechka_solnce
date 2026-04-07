@@ -770,7 +770,7 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
       return res.status(400).json({ error: 'Файл не загружен' });
     }
 
-    const imageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+    const imageUrl = `/uploads/${req.file.filename}`;
     console.log('Файл загружен:', imageUrl);
     
     res.json({
