@@ -630,14 +630,66 @@ app.get('/api/profile', authMiddleware, async (req, res) => {
 // ОБНОВИТЬ ПРОФИЛЬ
 app.put('/api/profile', authMiddleware, async (req, res) => {
   try {
-    const { full_name, bio, avatar_url } = req.body;
+    const { full_name, bio, avatar_url, phone, email } = req.body;
     const connection = await pool.getConnection();
 
-    await connection.execute(
-      'UPDATE users SET full_name = ?, bio = ?, avatar_url = ? WHERE id = ?',
-      [full_name, bio, avatar_url, req.userId]
-    );
+    // Если меняем email или phone, проверяем уникальность
+    if (email) {
+      const [existingEmail] = await connection.execute(
+        'SELECT id FROM users WHERE email = ? AND id != ?',
+        [email, req.userId]
+      );
+      if (existingEmail.length > 0) {
+        connection.release();
+        return res.status(400).json({ error: 'Эта почта уже зарегистрирована' });
+      }
+    }
 
+    if (phone) {
+      const [existingPhone] = await connection.execute(
+        'SELECT id FROM users WHERE phone = ? AND id != ?',
+        [phone, req.userId]
+      );
+      if (existingPhone.length > 0) {
+        connection.release();
+        return res.status(400).json({ error: 'Этот телефон уже зарегистрирован' });
+      }
+    }
+
+    // Обновляем профиль
+    const updates = [];
+    const values = [];
+    
+    if (full_name !== undefined) {
+      updates.push('full_name = ?');
+      values.push(full_name);
+    }
+    if (bio !== undefined) {
+      updates.push('bio = ?');
+      values.push(bio);
+    }
+    if (avatar_url !== undefined) {
+      updates.push('avatar_url = ?');
+      values.push(avatar_url);
+    }
+    if (email !== undefined) {
+      updates.push('email = ?');
+      values.push(email);
+    }
+    if (phone !== undefined) {
+      updates.push('phone = ?');
+      values.push(phone);
+    }
+
+    if (updates.length === 0) {
+      connection.release();
+      return res.status(400).json({ error: 'Нечего обновлять' });
+    }
+
+    values.push(req.userId);
+    const query = `UPDATE users SET ${updates.join(', ')} WHERE id = ?`;
+    
+    await connection.execute(query, values);
     connection.release();
 
     res.json({ message: 'Профиль успешно обновлен' });
