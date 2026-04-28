@@ -1,9 +1,9 @@
 module.exports = {
   apps: [
     {
-      name: 'backend',
+      name: 'cartoshka',
       script: './backend/index.js',
-      cwd: '/root/Cartoshcka/Anechka_solnce',
+      cwd: '/root/cartoshka/Anechka_solnce',
       
       // Режим работы
       instances: 1,

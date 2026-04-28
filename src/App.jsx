@@ -1,6 +1,6 @@
 import './App.css'
 import { useState, useEffect } from 'react'
-import { profileAPI } from './services/api'
+import { profileAPI, favoritesAPI } from './services/api'
 import banner from './assets/main/banner.png'
 import bannerHeinz from './assets/main/banner_hainz.png'
 import logo from './assets/main/Logo.png'
@@ -91,12 +91,66 @@ const getProfileLink = () => {
 function App() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [notification, setNotification] = useState(null)
 
   const handleSearch = (e) => {
     e.preventDefault()
     if (searchQuery.trim()) {
       window.location.href = `/catalog?search=${encodeURIComponent(searchQuery.trim())}`
     }
+  }
+
+  const showNotification = (message, duration = 3000) => {
+    setNotification(message)
+    setTimeout(() => {
+      setNotification(null)
+    }, duration)
+  }
+
+  const handleAddToFavorite = async (recipeId, recipeName, e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    const token = localStorage.getItem('authToken')
+    if (!token) {
+      window.location.href = '/login'
+      return
+    }
+
+    try {
+      await favoritesAPI.add(recipeId)
+      showNotification(`✨ "${recipeName}" добавлено в избранное!`)
+    } catch (err) {
+      showNotification(`❌ Ошибка: ${err.message}`)
+      console.error('Error adding to favorites:', err)
+    }
+  }
+
+  const renderRecipeCardWithHandler = (recipe) => {
+    return (
+      <a href={`/recipe?id=${recipe.id}`} style={{ textDecoration: 'none' }} key={recipe.title}>
+        <div className="recipe-card">
+          <div className="recipe-card-img">
+            <img src={recipe.img} alt={recipe.title} />
+          </div>
+          <div className="recipe-card-body">
+            <h3 className="recipe-card-title">{recipe.title}</h3>
+            <p className="recipe-card-author">Ильина Анна</p>
+            <div className="recipe-card-footer">
+              <div className="recipe-difficulty">{renderDifficulty(recipe.difficulty)}</div>
+              <button 
+                className="recipe-fav" 
+                type="button" 
+                aria-label="Добавить в избранное"
+                onClick={(e) => handleAddToFavorite(recipe.id, recipe.title, e)}
+              >
+                <img src={favIcon} alt="Избранное" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </a>
+    )
   }
 
   useEffect(() => {
@@ -150,6 +204,14 @@ function App() {
 
   return (
     <div className="app">
+      {notification && (
+        <div className="notification-toast">
+          <div className="notification-content">
+            {notification}
+          </div>
+        </div>
+      )}
+
       <section className="banner">
         <div className="banner-image">
           <img src={banner} alt="Изысканные рецепты для всех" />
@@ -203,7 +265,7 @@ function App() {
         <section className="recipes-section">
           <h2 className="recipes-title">НОВЫЕ РЕЦЕПТЫ</h2>
           <div className="recipes-grid">
-            {newRecipes.map(renderRecipeCard)}
+            {newRecipes.map(renderRecipeCardWithHandler)}
           </div>
         </section>
 
@@ -214,7 +276,7 @@ function App() {
         <section className="recipes-section">
           <h2 className="recipes-title">ПРАЗДНИЧНЫЕ БЛЮДА</h2>
           <div className="recipes-grid">
-            {festiveRecipes.map(renderRecipeCard)}
+            {festiveRecipes.map(renderRecipeCardWithHandler)}
           </div>
         </section>
       </main>

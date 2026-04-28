@@ -55,6 +55,10 @@ function ProfilePage() {
       } catch (err) {
         setError(err.message || 'Ошибка загрузки профиля')
         console.error('Error loading profile:', err)
+        // Редирект на логин если не авторизован
+        setTimeout(() => {
+          window.location.href = '/login'
+        }, 1000)
       } finally {
         setLoading(false)
       }
