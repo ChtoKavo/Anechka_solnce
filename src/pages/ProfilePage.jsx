@@ -13,7 +13,7 @@ import iconOk from '../assets/footer/ok.png'
 import iconTg from '../assets/footer/tg.png'
 import iconYt from '../assets/footer/youtube.png'
 
-const initialIngredients = [{ name: '', quantity: '' }]
+const initialIngredients = [{ name: '', quantity: '', unit: '' }]
 const initialSteps = [{ text: '', image: null }]
 
 function ProfilePage() {
@@ -68,7 +68,7 @@ function ProfilePage() {
   }, [])
 
   const addIngredient = () => {
-    setIngredients((prev) => [...prev, { name: '', quantity: '' }])
+    setIngredients((prev) => [...prev, { name: '', quantity: '', unit: '' }])
   }
 
   const removeIngredient = (indexToRemove) => {
@@ -422,7 +422,7 @@ function ProfilePage() {
                   </div>
 
                   {ingredients.map((ingredient, index) => (
-                    <div className="profile-modal-grid-two profile-modal-list-row" key={`ingredient-${index}`}>
+                    <div className="profile-modal-grid-ingredient profile-modal-list-row" key={`ingredient-${index}`}>
                       <input
                         type="text"
                         className="profile-modal-input"
@@ -430,23 +430,28 @@ function ProfilePage() {
                         value={ingredient.name}
                         onChange={(event) => updateIngredient(index, 'name', event.target.value)}
                       />
-                      <div className="profile-modal-list-last-col">
-                        <input
-                          type="text"
-                          className="profile-modal-input"
-                          placeholder="Количество"
-                          value={ingredient.quantity}
-                          onChange={(event) => updateIngredient(index, 'quantity', event.target.value)}
-                        />
-                        <button
-                          type="button"
-                          className="profile-modal-remove"
-                          onClick={() => removeIngredient(index)}
-                          aria-label="Удалить ингредиент"
-                        >
-                          ×
-                        </button>
-                      </div>
+                      <input
+                        type="text"
+                        className="profile-modal-input"
+                        placeholder="Количество"
+                        value={ingredient.quantity}
+                        onChange={(event) => updateIngredient(index, 'quantity', event.target.value)}
+                      />
+                      <input
+                        type="text"
+                        className="profile-modal-input"
+                        placeholder="Ед. изм."
+                        value={ingredient.unit}
+                        onChange={(event) => updateIngredient(index, 'unit', event.target.value)}
+                      />
+                      <button
+                        type="button"
+                        className="profile-modal-remove"
+                        onClick={() => removeIngredient(index)}
+                        aria-label="Удалить ингредиент"
+                      >
+                        ×
+                      </button>
                     </div>
                   ))}
                 </div>

@@ -11,9 +11,15 @@ export default function RegisterPage() {
     password: '',
     password_confirm: '',
     subscribe_newsletter: false,
+    agree_data: false,
+    agree_policy: false,
   })
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
   const [loading, setLoading] = useState(false)
+
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  const validatePhone = (phone) => /^\+?[\d\s\-()]{6,20}$/.test(phone)
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -21,25 +27,61 @@ export default function RegisterPage() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }))
+    setFieldErrors(prev => ({ ...prev, [name]: '' }))
   }
 
   const handleRegister = async (e) => {
     e.preventDefault()
     setError('')
+    setFieldErrors({})
+
+    const errors = {}
+
+    if (!formData.full_name.trim()) {
+      errors.full_name = 'Введите ФИО'
+    }
+
+    if (!formData.phone.trim()) {
+      errors.phone = 'Введите телефон'
+    } else if (!validatePhone(formData.phone.trim())) {
+      errors.phone = 'Введите корректный телефон'
+    }
+
+    if (!formData.email.trim()) {
+      errors.email = 'Введите Email'
+    } else if (!validateEmail(formData.email.trim())) {
+      errors.email = 'Введите корректный Email'
+    }
+
+    if (!formData.password) {
+      errors.password = 'Введите пароль'
+    } else if (formData.password.length < 6) {
+      errors.password = 'Пароль должен быть не менее 6 символов'
+    }
+
+    if (!formData.password_confirm) {
+      errors.password_confirm = 'Повторите пароль'
+    } else if (formData.password !== formData.password_confirm) {
+      errors.password_confirm = 'Пароли не совпадают'
+    }
+
+    if (!formData.agree_data) {
+      errors.agree_data = 'Необходимо согласие на обработку данных'
+    }
+
+    if (!formData.agree_policy) {
+      errors.agree_policy = 'Необходимо согласиться с политикой конфиденциальности'
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      setError('Пожалуйста, исправьте ошибки в форме')
+      return
+    }
+
     setLoading(true)
 
     try {
-      // Валидация
-      if (!formData.full_name || !formData.phone || !formData.email || !formData.password) {
-        throw new Error('Заполните все обязательные поля')
-      }
-      if (formData.password !== formData.password_confirm) {
-        throw new Error('Пароли не совпадают')
-      }
-      if (formData.password.length < 6) {
-        throw new Error('Пароль должен быть не менее 6 символов')
-      }
-
       const response = await authAPI.register({
         full_name: formData.full_name,
         phone: formData.phone,
@@ -66,74 +108,88 @@ export default function RegisterPage() {
           <div className="register-box">
             <h1 className="register-title">РЕГИСТРАЦИЯ</h1>
 
-            {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
+            {error && <div className="form-error-box">{error}</div>}
 
             <form onSubmit={handleRegister} className="register-form">
-              <input
-                type="text"
-                name="full_name"
-                placeholder="ФИО"
-                className="register-input"
-                value={formData.full_name}
-                onChange={handleChange}
-                required
-              />
-              <input
-                type="tel"
-                name="phone"
-                placeholder="Телефон"
-                className="register-input"
-                value={formData.phone}
-                onChange={handleChange}
-                required
-              />
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                className="register-input"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-              <input
-                type="password"
-                name="password"
-                placeholder="Пароль"
-                className="register-input"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-              <input
-                type="password"
-                name="password_confirm"
-                placeholder="Повторить Пароль"
-                className="register-input"
-                value={formData.password_confirm}
-                onChange={handleChange}
-                required
-              />
+              <div>
+                <input
+                  type="text"
+                  name="full_name"
+                  placeholder="ФИО"
+                  className={`register-input ${fieldErrors.full_name ? 'input-invalid' : ''}`}
+                  value={formData.full_name}
+                  onChange={handleChange}
+                />
+                {fieldErrors.full_name && <div className="field-error">{fieldErrors.full_name}</div>}
+              </div>
+              <div>
+                <input
+                  type="tel"
+                  name="phone"
+                  placeholder="Телефон"
+                  className={`register-input ${fieldErrors.phone ? 'input-invalid' : ''}`}
+                  value={formData.phone}
+                  onChange={handleChange}
+                />
+                {fieldErrors.phone && <div className="field-error">{fieldErrors.phone}</div>}
+              </div>
+              <div>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  className={`register-input ${fieldErrors.email ? 'input-invalid' : ''}`}
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+                {fieldErrors.email && <div className="field-error">{fieldErrors.email}</div>}
+              </div>
+              <div>
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Пароль"
+                  className={`register-input ${fieldErrors.password ? 'input-invalid' : ''}`}
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+                {fieldErrors.password && <div className="field-error">{fieldErrors.password}</div>}
+              </div>
+              <div>
+                <input
+                  type="password"
+                  name="password_confirm"
+                  placeholder="Повторить Пароль"
+                  className={`register-input ${fieldErrors.password_confirm ? 'input-invalid' : ''}`}
+                  value={formData.password_confirm}
+                  onChange={handleChange}
+                />
+                {fieldErrors.password_confirm && <div className="field-error">{fieldErrors.password_confirm}</div>}
+              </div>
 
               <label className="register-check-row">
                 <input
                   type="checkbox"
                   name="agree_data"
-                  required
+                  checked={formData.agree_data}
+                  onChange={handleChange}
                 />
                 <span>Я соглашаюсь на обработку персональных данных</span>
               </label>
+              {fieldErrors.agree_data && <div className="field-error field-error-checkbox">{fieldErrors.agree_data}</div>}
 
               <label className="register-check-row">
                 <input
                   type="checkbox"
                   name="agree_policy"
-                  required
+                  checked={formData.agree_policy}
+                  onChange={handleChange}
                 />
                 <span>
                   Я соглашаюсь с <a href="#" className="register-policy-link">Политикой Конфиденциальности</a> этого сайта
                 </span>
               </label>
+              {fieldErrors.agree_policy && <div className="field-error field-error-checkbox">{fieldErrors.agree_policy}</div>}
 
               <label className="register-check-row">
                 <input

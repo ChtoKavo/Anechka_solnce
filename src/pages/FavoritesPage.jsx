@@ -12,6 +12,7 @@ import iconVk from '../assets/footer/vk.svg'
 import iconOk from '../assets/footer/ok.png'
 import iconTg from '../assets/footer/tg.png'
 import iconYt from '../assets/footer/youtube.png'
+import RecipeCardWithPreview from '../components/RecipeCardWithPreview.jsx'
 
 function renderDifficulty(level) {
   return (
@@ -130,23 +131,13 @@ function FavoritesPage() {
           {!loading && favorites.length > 0 && (
             <div className="favorites-grid">
               {favorites.map((recipe) => (
-                <a href={`/recipe?id=${recipe.id}`} style={{ textDecoration: 'none' }} key={recipe.id}>
-                  <div className="recipe-card">
-                    <div className="recipe-card-img">
-                      <img src={recipe.image_url || recMundire} alt={recipe.title} />
-                    </div>
-                    <div className="recipe-card-body">
-                      <h3 className="recipe-card-title">{recipe.title}</h3>
-                      <p className="recipe-card-author">{recipe.author || 'Автор'}</p>
-                      <div className="recipe-card-footer">
-                        <div className="recipe-difficulty">{renderDifficulty(recipe.difficulty)}</div>
-                        <button className="recipe-fav" type="button" aria-label="Добавлено в избранное">
-                          <img src={favIcon} alt="Избранное" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </a>
+                <RecipeCardWithPreview
+                  key={recipe.id}
+                  recipe={recipe}
+                  renderDifficulty={renderDifficulty}
+                  favIcon={favIcon}
+                  isBasicCard={false}
+                />
               ))}
             </div>
           )}

@@ -34,6 +34,7 @@ export default function RecipePage() {
   const [error, setError] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [portions, setPortions] = useState(1);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -79,8 +80,9 @@ export default function RecipePage() {
   if (!recipe) return <div style={{ padding: '50px', textAlign: 'center' }}>Рецепт не найден</div>;
 
   const renderDifficulty = (level) => {
-    const icons = Array(level || 1).fill('🟢') + Array(Math.max(0, 3 - (level || 1))).fill('⚪');
-    return icons;
+    const full = Array.from({ length: level || 1 }, () => '🟢')
+    const empty = Array.from({ length: Math.max(0, 3 - (level || 1)) }, () => '⚪')
+    return [...full, ...empty].join(' ')
   };
 
   return (
@@ -129,21 +131,27 @@ export default function RecipePage() {
 
       <main className="main-content-recipe">
         <section className="recipe-detail">
-          <div className="recipe-image-container">
-            <img src={recipe.image_url || recipe1} alt={recipe.title || recipe.name} className="recipe-detail-image" />
-            <span className="recipe-number">{recipe.id}</span>
+          <div className="recipe-left">
+            <div className="recipe-header-card">
+              <div>
+                <h1 className="recipe-title">{recipe.title || recipe.name}</h1>
+                <p className="recipe-author">{recipe.author || 'Ильина Анна'}</p>
+              </div>
+            </div>
+            <div className="recipe-image-container">
+              <img src={recipe.image_url || recipe1} alt={recipe.title || recipe.name} className="recipe-detail-image" />
+            </div>
+            <div className="recipe-meta-row">
+              <div className="recipe-meta-item">⏱ {recipe.time_minutes ? recipe.time_minutes + ' мин' : 'Время неизвестно'}</div>
+              <div className="recipe-meta-item">🔥 {recipe.calories ? recipe.calories + ' ккал' : 'Калории неизвестны'}</div>
+              <div className="recipe-meta-item">{recipe.difficulty ? renderDifficulty(recipe.difficulty) : renderDifficulty(1)}</div>
+            </div>
+            <div className="recipe-short-desc">
+              <p>{recipe.description || 'Описание отсутствует'}</p>
+            </div>
           </div>
 
           <div className="recipe-right">
-            <div className="recipe-info">
-              <h1 className="recipe-title">{recipe.title || recipe.name}</h1>
-              <p className="recipe-author">{recipe.author || 'Автор неизвестен'}</p>
-              <div className="recipe-meta">
-                <span className="recipe-time">⏱ {recipe.time_minutes ? recipe.time_minutes + ' мин' : 'Время неизвестно'}</span>
-                <span className="recipe-calories">🔥 {recipe.calories ? recipe.calories + ' ккал' : 'Калории неизвестны'}</span>
-              </div>
-            </div>
-
             <div className="recipe-ingredients-table">
               <h2>ИНГРЕДИЕНТЫ</h2>
               <table>
@@ -154,14 +162,44 @@ export default function RecipePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {recipe.ingredients && recipe.ingredients.map((ing, idx) => (
-                    <tr key={idx}>
-                      <td>{ing.name}</td>
-                      <td>{ing.quantity} {ing.unit || ''}</td>
-                    </tr>
-                  ))}
+                  {recipe.ingredients && recipe.ingredients.map((ing, idx) => {
+                    const rawValue = ing.quantity
+                    const quantityValue = parseFloat(rawValue)
+                    const isNumber = !Number.isNaN(quantityValue)
+                    const totalQuantity = isNumber ? quantityValue * portions : rawValue
+                    return (
+                      <tr key={idx}>
+                        <td>{ing.name}</td>
+                        <td>
+                          {isNumber
+                            ? `${Number.isInteger(totalQuantity) ? totalQuantity : totalQuantity.toFixed(2)}${ing.unit ? ` ${ing.unit}` : ''}`
+                            : `${rawValue}${ing.unit ? ` ${ing.unit}` : ''}`}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
+
+              <div className="portions-calculator">
+                <span>КОЛ-ВО ПОРЦИЙ:</span>
+                <div className="portions-controls">
+                  <button 
+                    className="portion-btn minus-btn"
+                    onClick={() => setPortions(Math.max(1, portions - 1))}
+                    disabled={portions <= 1}
+                  >
+                    −
+                  </button>
+                  <span className="portions-display">{portions}</span>
+                  <button 
+                    className="portion-btn plus-btn"
+                    onClick={() => setPortions(portions + 1)}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div className="recipe-difficulty">
@@ -184,7 +222,10 @@ export default function RecipePage() {
                 <div className="cooking-step-image">
                   <img src={step.image_url || recipe1} alt={`Шаг ${idx + 1}`} />
                 </div>
-                <p>{step.description}</p>
+                <div className="cooking-step-text">
+                  <span className="cooking-step-number">ШАГ {idx + 1}</span>
+                  <p>{step.description}</p>
+                </div>
               </li>
             ))}
           </ol>

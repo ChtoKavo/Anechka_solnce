@@ -29,6 +29,7 @@ import LoginPage from './pages/LoginPage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx'
 import AdminPage from './pages/AdminPage.jsx'
+import RecipeCardWithPreview from './components/RecipeCardWithPreview.jsx'
 
 const newRecipes = [
   { id: 1, img: recMundire, title: 'КАРТОШКА В МУНДИРЕ', difficulty: 3 },
@@ -61,31 +62,10 @@ function renderDifficulty(level) {
   )
 }
 
-function renderRecipeCard(recipe) {
-  return (
-    <a href={`/recipe?id=${recipe.id}`} style={{ textDecoration: 'none' }} key={recipe.title}>
-      <div className="recipe-card">
-        <div className="recipe-card-img">
-          <img src={recipe.img} alt={recipe.title} />
-        </div>
-        <div className="recipe-card-body">
-          <h3 className="recipe-card-title">{recipe.title}</h3>
-          <p className="recipe-card-author">Ильина Анна</p>
-          <div className="recipe-card-footer">
-            <div className="recipe-difficulty">{renderDifficulty(recipe.difficulty)}</div>
-            <button className="recipe-fav" type="button" aria-label="Добавить в избранное">
-              <img src={favIcon} alt="Избранное" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </a>
-  )
-}
+const isAuthenticated = () => Boolean(localStorage.getItem('authToken'))
 
 const getProfileLink = () => {
-  const token = localStorage.getItem('authToken')
-  return token ? '/profile' : '/login'
+  return isAuthenticated() ? '/profile' : '/login'
 }
 
 function App() {
@@ -128,28 +108,15 @@ function App() {
 
   const renderRecipeCardWithHandler = (recipe) => {
     return (
-      <a href={`/recipe?id=${recipe.id}`} style={{ textDecoration: 'none' }} key={recipe.title}>
-        <div className="recipe-card">
-          <div className="recipe-card-img">
-            <img src={recipe.img} alt={recipe.title} />
-          </div>
-          <div className="recipe-card-body">
-            <h3 className="recipe-card-title">{recipe.title}</h3>
-            <p className="recipe-card-author">Ильина Анна</p>
-            <div className="recipe-card-footer">
-              <div className="recipe-difficulty">{renderDifficulty(recipe.difficulty)}</div>
-              <button 
-                className="recipe-fav" 
-                type="button" 
-                aria-label="Добавить в избранное"
-                onClick={(e) => handleAddToFavorite(recipe.id, recipe.title, e)}
-              >
-                <img src={favIcon} alt="Избранное" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </a>
+      <RecipeCardWithPreview
+        key={recipe.id}
+        recipe={recipe}
+        onFavoriteClick={handleAddToFavorite}
+        renderDifficulty={renderDifficulty}
+        favIcon={favIcon}
+        showNotification={showNotification}
+        isBasicCard={true}
+      />
     )
   }
 
@@ -163,42 +130,44 @@ function App() {
       }
     }
 
-    // Не загружаем профиль если уже на странице login/register
     const currentPath = window.location.pathname.toLowerCase()
-    if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
+    const token = localStorage.getItem('authToken')
+    if (token && !currentPath.includes('/login') && !currentPath.includes('/register')) {
       loadUserRole()
     }
   }, [])
 
-  if (window.location.pathname.toLowerCase().includes('/recipe')) {
+  const pathname = window.location.pathname.toLowerCase()
+
+  if (pathname.includes('/recipe')) {
     return <RecipePage />
   }
 
-  if (window.location.pathname.toLowerCase().includes('/catalog')) {
+  if (pathname.includes('/catalog')) {
     return <CatalogPage />
   }
 
-  if (window.location.pathname.toLowerCase().includes('/favorites')) {
+  if (pathname.includes('/favorites')) {
     return <FavoritesPage />
   }
 
-  if (window.location.pathname.toLowerCase().includes('/login')) {
+  if (pathname === '/login' || pathname.includes('/login')) {
     return <LoginPage />
   }
 
-  if (window.location.pathname.toLowerCase().includes('/register')) {
+  if (pathname === '/register' || pathname.includes('/register')) {
     return <RegisterPage />
   }
 
-  if (window.location.pathname.toLowerCase().includes('/profile')) {
+  if (pathname.includes('/profile')) {
     return <ProfilePage />
   }
 
-  if (window.location.pathname.toLowerCase().includes('/settings')) {
+  if (pathname.includes('/settings')) {
     return <SettingsPage />
   }
 
-  if (window.location.pathname.toLowerCase().includes('/admin')) {
+  if (pathname.includes('/admin')) {
     return <AdminPage />
   }
 

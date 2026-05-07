@@ -219,9 +219,6 @@ INSERT INTO recipe_categories (recipe_id, category_id) VALUES
 (2, 1),
 (3, 1);
 
--- =====================================================
--- ИНДЕКСЫ ДЛЯ ОПТИМИЗАЦИИ
--- =====================================================
 CREATE INDEX idx_recipes_published ON recipes(is_published);
 CREATE INDEX idx_recipes_user ON recipes(user_id);
 CREATE INDEX idx_recipes_created ON recipes(created_at DESC);
